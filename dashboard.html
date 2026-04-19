@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Murid - Ifonfix Academy</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 font-sans text-slate-900">
+
+    <nav class="bg-white shadow-sm p-4 mb-8">
+        <div class="max-w-5xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold text-blue-600">Ifonfix Academy</h1>
+            <button onclick="window.location.href='index.html'" class="text-sm text-red-500 font-medium">Keluar</button>
+        </div>
+    </nav>
+
+    <main class="max-w-5xl mx-auto px-4">
+        <h2 class="text-2xl font-bold mb-6">Materi Kursus Anda</h2>
+
+        <div id="daftarMateri" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <p class="text-slate-500 italic">Memuat materi...</p>
+        </div>
+    </main>
+
+    <script>
+        const API_BASE = "http://127.0.0.1:5000/api/academy";
+
+        async function muatMateri() {
+            try {
+                const res = await fetch(`${API_BASE}/materi`);
+                const data = await res.json();
+                
+                const wadah = document.getElementById('daftarMateri');
+                wadah.innerHTML = ''; // Bersihkan teks loading
+
+                if (data.length === 0) {
+                    wadah.innerHTML = '<p class="text-slate-500">Belum ada materi yang diunggah.</p>';
+                    return;
+                }
+
+                data.forEach(materi => {
+                    // Logika untuk menampilkan preview video
+                    let embedUrl = materi.link;
+                    
+                    // Jika link YouTube, ubah ke format embed agar bisa diputar di web
+                    if (materi.link.includes('youtube.com/watch?v=')) {
+                        embedUrl = materi.link.replace('watch?v=', 'embed/');
+                    }
+
+                    const kartu = `
+                        <div class="bg-white p-4 rounded-xl shadow-md border border-slate-200">
+                            <div class="aspect-video mb-4 bg-black rounded-lg overflow-hidden">
+                                <iframe class="w-full h-full" src="${embedUrl}" frameborder="0" allowfullscreen></iframe>
+                            </div>
+                            <h3 class="font-bold text-lg text-slate-800">${materi.judul}</h3>
+                            <p class="text-sm text-blue-500 mt-1 uppercase font-semibold">${materi.tipe}</p>
+                        </div>
+                    `;
+                    wadah.innerHTML += kartu;
+                });
+            } catch (error) {
+                console.error("Gagal memuat:", error);
+                document.getElementById('daftarMateri').innerHTML = '<p class="text-red-500">Gagal mengambil data dari server.</p>';
+            }
+        }
+
+        // Jalankan fungsi saat halaman dibuka
+        window.onload = muatMateri;
+    </script>
+</body>
+</html>
